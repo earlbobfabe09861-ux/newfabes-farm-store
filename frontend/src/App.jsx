@@ -22,7 +22,10 @@ function App() {
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
+  // SEARCH & FILTER STATE
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   
@@ -48,7 +51,6 @@ function App() {
   }, [user]);
 
   const refreshProducts = () => {
-    // CHANGED TO LIVE URL
     axios.get(`${API_URL}/api/products`)
       .then(response => setProducts(response.data))
       .catch(error => console.error("Error fetching data:", error));
@@ -106,46 +108,37 @@ function App() {
 
   const handleDeleteProduct = (id) => {
     if(!window.confirm("Are you sure you want to delete this?")) return;
-    // CHANGED TO LIVE URL
     axios.delete(`${API_URL}/api/products/${id}`)
       .then(() => refreshProducts())
       .catch(err => alert("Error deleting: " + err));
   };
 
-  // --- NEW: START EDITING ---
   const handleEditProduct = (product) => {
-    setNewProduct(product); // Fill form with existing data
-    setEditingId(product._id); // Turn on "Edit Mode"
-    window.scrollTo(0,0); // Scroll to top so they see the form
+    setNewProduct(product); 
+    setEditingId(product._id); 
+    window.scrollTo(0,0); 
   };
 
-  // --- NEW: CANCEL EDITING ---
   const handleCancelEdit = () => {
     setNewProduct({ name: "", price: "", category: "", description: "", image: "" });
     setEditingId(null);
   };
 
-  // --- UPDATED: HANDLE SUBMIT (ADD OR UPDATE) ---
   const handleSubmitProduct = (e) => {
     e.preventDefault(); 
-
     if (editingId) {
-      // === UPDATE EXISTING ===
-      // CHANGED TO LIVE URL
       axios.put(`${API_URL}/api/products/${editingId}`, newProduct)
         .then(() => {
           alert("Product Updated!");
-          handleCancelEdit(); // Reset form
+          handleCancelEdit(); 
           refreshProducts();
         })
         .catch(err => alert("Error updating: " + err));
     } else {
-      // === ADD NEW ===
-      // CHANGED TO LIVE URL
       axios.post(`${API_URL}/api/products`, newProduct)
         .then(() => {
           alert("Product Added!");
-          handleCancelEdit(); // Reset form
+          handleCancelEdit(); 
           refreshProducts();
         })
         .catch(err => alert("Error adding: " + err));
@@ -159,10 +152,15 @@ function App() {
 
   const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    product.category?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // === NEW FILTER LOGIC (SEARCH + CATEGORY) ===
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === "All Categories" || (product.category && product.category === selectedCategory);
+    return matchesSearch && matchesCategory;
+  });
+
+  // EXTRACT UNIQUE CATEGORIES FOR DROPDOWN
+  const categories = ["All Categories", ...new Set(products.map(p => p.category).filter(Boolean))];
 
   const getDeliveryDate = (days) => {
     const date = new Date();
@@ -192,14 +190,38 @@ function App() {
           <span style={{color: '#f5af02'}}>F</span><span style={{color: '#86b817'}}>a</span><span style={{color: '#e53238'}}>r</span><span style={{color: '#0064d2'}}>m</span>
         </div>
         
-        <div className="search-bar-container">
+        {/* === NEW: CATEGORY DROPDOWN + SEARCH === */}
+        <div className="search-bar-container" style={{display:'flex', alignItems:'center', border:'2px solid #333', borderRadius:'4px', overflow:'hidden'}}>
+            <select 
+              value={selectedCategory} 
+              onChange={(e) => { setSelectedCategory(e.target.value); setView("store"); }}
+              style={{
+                padding: '10px', 
+                backgroundColor: '#f8f8f8', 
+                border: 'none', 
+                borderRight: '1px solid #ccc',
+                cursor: 'pointer',
+                outline: 'none',
+                maxWidth: '150px'
+              }}
+            >
+              {categories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+
             <input 
               type="text" 
               className="search-input"
-              placeholder="Search for corn, tractors, seeds..." 
+              style={{border: 'none', outline: 'none', flex: 1}}
+              placeholder="Search for items..." 
+              value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); if(view !== "store") setView("store"); }} 
             />
-            <button className="search-btn">Search</button>
+            
+            <div style={{padding: '0 15px', color: '#333', cursor: 'pointer'}} onClick={() => setView("store")}>
+              🔍
+            </div>
         </div>
 
         <nav className="nav-links">
@@ -283,6 +305,80 @@ function App() {
                       <div>Estimated between <span style={{fontWeight: 'bold'}}>{getDeliveryDate(3)}</span> and <span style={{fontWeight: 'bold'}}>{getDeliveryDate(6)}</span>.</div>
                     </div>
                   </div>
+
+                  {/* === NEW: DESCRIPTION, SELLER & FEEDBACK SECTIONS === */}
+                  
+                  <hr style={{ margin: "30px 0", border: "0", borderTop: "1px solid #e1e1e1" }} />
+
+                  {/* 1. ITEM DESCRIPTION SECTION */}
+                  <div className="product-description-section">
+                    <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "10px" }}>
+                      Item Description
+                    </h3>
+                    <p style={{ fontSize: "16px", lineHeight: "1.6", color: "#333" }}>
+                      {selectedProduct.description ? selectedProduct.description : "No description available for this product."}
+                    </p>
+                  </div>
+
+                  <hr style={{ margin: "30px 0", border: "0", borderTop: "1px solid #e1e1e1" }} />
+
+                  {/* 2. ABOUT THE SELLER SECTION */}
+                  <div className="about-seller-section">
+                    <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "15px" }}>
+                      About the Seller
+                    </h3>
+                    <div style={{ display: "flex", alignItems: "center", gap: "15px", marginBottom: "10px" }}>
+                      <div style={{ 
+                        width: "50px", 
+                        height: "50px", 
+                        backgroundColor: "#2c3e50", 
+                        color: "white",
+                        borderRadius: "50%", 
+                        display: "flex", 
+                        alignItems: "center", 
+                        justifyContent: "center",
+                        fontWeight: "bold"
+                      }}>
+                        FD
+                      </div>
+                      <div>
+                        <p style={{ fontWeight: "bold", margin: "0" }}>FarmDirect</p>
+                        <p style={{ fontSize: "14px", color: "#666", margin: "0" }}>98.8% Positive Feedback</p>
+                      </div>
+                    </div>
+                    <p style={{ fontSize: "14px", color: "#555" }}>
+                      We are a family-owned business located in Springfield, IL. We specialize in high-quality farm tools and locally sourced seeds. We ship daily!
+                    </p>
+                  </div>
+
+                  <hr style={{ margin: "30px 0", border: "0", borderTop: "1px solid #e1e1e1" }} />
+
+                  {/* 3. SELLER FEEDBACK SECTION */}
+                  <div className="seller-feedback-section">
+                    <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "15px" }}>
+                      Seller Feedback
+                    </h3>
+                    
+                    <div style={{ marginBottom: "15px", paddingBottom: "10px", borderBottom: "1px solid #eee" }}>
+                      <div style={{ color: "#f39c12", marginBottom: "5px" }}>★★★★★</div>
+                      <p style={{ fontWeight: "bold", margin: "0 0 5px 0" }}>Exactly what I needed!</p>
+                      <p style={{ fontSize: "14px", color: "#555", margin: "0" }}>
+                        "Very sturdy and arrived 2 days early. Highly recommend this seller."
+                      </p>
+                      <p style={{ fontSize: "12px", color: "#999", marginTop: "5px" }}>- John D.</p>
+                    </div>
+
+                    <div style={{ marginBottom: "15px" }}>
+                      <div style={{ color: "#f39c12", marginBottom: "5px" }}>★★★★☆</div>
+                      <p style={{ fontWeight: "bold", margin: "0 0 5px 0" }}>Good value</p>
+                      <p style={{ fontSize: "14px", color: "#555", margin: "0" }}>
+                        "Good product for the price. Packaging was a bit damaged but item was fine."
+                      </p>
+                      <p style={{ fontSize: "12px", color: "#999", marginTop: "5px" }}>- Sarah M.</p>
+                    </div>
+                  </div>
+                  {/* === END NEW SECTIONS === */}
+
               </div>
             </div>
           </div>
@@ -290,14 +386,30 @@ function App() {
 
         {/* Shop Store View */}
         {view === "store" && (
-          <div className="product-grid">
-            {filteredProducts.map(product => (
-              <div key={product._id} className="product-card" onClick={() => openProductDetails(product)}>
-                <img src={product.image} alt={product.name} onError={(e) => {e.target.src = "https://placehold.co/200?text=No+Image"}} />
-                <h3 style={{fontSize: '1rem', color: '#333', marginBottom: '5px', textDecoration: 'underline'}}>{product.name}</h3>
-                <div style={{fontWeight: 'bold', fontSize: '1.2rem'}}>${product.price}</div>
-              </div>
-            ))}
+          <div className="store-wrapper">
+             {/* Show what is being searched/filtered */}
+             {(searchTerm || selectedCategory !== "All Categories") && (
+               <div style={{marginBottom: '15px', fontSize: '1.1rem'}}>
+                  Showing results for: <b>{selectedCategory}</b> {searchTerm && <span> matching "<b>{searchTerm}</b>"</span>}
+               </div>
+             )}
+
+            <div className="product-grid">
+              {filteredProducts.length > 0 ? (
+                filteredProducts.map(product => (
+                  <div key={product._id} className="product-card" onClick={() => openProductDetails(product)}>
+                    <img src={product.image} alt={product.name} onError={(e) => {e.target.src = "https://placehold.co/200?text=No+Image"}} />
+                    <h3 style={{fontSize: '1rem', color: '#333', marginBottom: '5px', textDecoration: 'underline'}}>{product.name}</h3>
+                    <div style={{fontWeight: 'bold', fontSize: '1.2rem'}}>${product.price}</div>
+                  </div>
+                ))
+              ) : (
+                <div style={{gridColumn: '1 / -1', textAlign: 'center', padding: '50px'}}>
+                  <h3>No products found.</h3>
+                  <button onClick={() => {setSearchTerm(""); setSelectedCategory("All Categories");}} className="cta-btn">Clear Filters</button>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -356,7 +468,7 @@ function App() {
           </div>
         )}
 
-        {/* Admin View - UPDATED WITH EDIT FUNCTIONALITY */}
+        {/* Admin View */}
         {view === "admin" && (
           <div className="admin-container">
              <h2>Admin Dashboard</h2>
@@ -367,7 +479,7 @@ function App() {
                 <div style={{display:'flex', gap:'10px', marginBottom:'10px'}}>
                    <input placeholder="Name" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} required style={{flex: 2}} />
                    <input placeholder="Price" type="number" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} required style={{flex: 1}} />
-                   <input placeholder="Category" value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} style={{flex: 1}} />
+                   <input placeholder="Category (e.g. Tools, Fruits)" value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} style={{flex: 1}} />
                 </div>
                 <input placeholder="Description" value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} style={{marginBottom: '10px', width:'100%'}} />
                 <input placeholder="Image URL" value={newProduct.image} onChange={e => setNewProduct({...newProduct, image: e.target.value})} required style={{marginBottom: '10px', width:'100%'}} />
