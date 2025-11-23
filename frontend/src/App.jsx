@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import './App.css';
 
+// === THIS IS YOUR LIVE BACKEND URL ===
+const API_URL = "https://newfabes-farm-store.onrender.com";
+
 function App() {
   // === STATE MANAGEMENT ===
   const [view, setView] = useState("home"); 
@@ -45,7 +48,8 @@ function App() {
   }, [user]);
 
   const refreshProducts = () => {
-    axios.get('http://localhost:5000/api/products')
+    // CHANGED TO LIVE URL
+    axios.get(`${API_URL}/api/products`)
       .then(response => setProducts(response.data))
       .catch(error => console.error("Error fetching data:", error));
   };
@@ -102,7 +106,8 @@ function App() {
 
   const handleDeleteProduct = (id) => {
     if(!window.confirm("Are you sure you want to delete this?")) return;
-    axios.delete(`http://localhost:5000/api/products/${id}`)
+    // CHANGED TO LIVE URL
+    axios.delete(`${API_URL}/api/products/${id}`)
       .then(() => refreshProducts())
       .catch(err => alert("Error deleting: " + err));
   };
@@ -126,7 +131,8 @@ function App() {
 
     if (editingId) {
       // === UPDATE EXISTING ===
-      axios.put(`http://localhost:5000/api/products/${editingId}`, newProduct)
+      // CHANGED TO LIVE URL
+      axios.put(`${API_URL}/api/products/${editingId}`, newProduct)
         .then(() => {
           alert("Product Updated!");
           handleCancelEdit(); // Reset form
@@ -135,7 +141,8 @@ function App() {
         .catch(err => alert("Error updating: " + err));
     } else {
       // === ADD NEW ===
-      axios.post('http://localhost:5000/api/products', newProduct)
+      // CHANGED TO LIVE URL
+      axios.post(`${API_URL}/api/products`, newProduct)
         .then(() => {
           alert("Product Added!");
           handleCancelEdit(); // Reset form
