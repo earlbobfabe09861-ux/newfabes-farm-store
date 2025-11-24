@@ -18,10 +18,11 @@ function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  // MODAL STATE
-  const [showModal, setShowModal] = useState(false);
+  // UI STATES
+  const [showModal, setShowModal] = useState(false); // Admin Popup
+  const [isRegistering, setIsRegistering] = useState(false); // Login vs Register toggle
 
-  // Temporary States
+  // Temporary Form States
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [newProduct, setNewProduct] = useState({ name: "", price: "", category: "", description: "", image: "" });
@@ -44,12 +45,15 @@ function App() {
   // === ACTIONS ===
   const handleLogin = (e) => {
     e.preventDefault();
+    // Simple Mock Logic: If Admin creds, log in as Admin. Otherwise, log in as User.
     if (loginData.username === "admin" && loginData.password === "123") {
       setUser({ name: "Administrator", role: "admin" });
     } else {
+      // If registering, we simulate creating an account by just logging them in
       setUser({ name: loginData.username, role: "user" });
     }
     setView("store"); 
+    setLoginData({ username: "", password: "" }); // Clear form
   };
 
   const handleLogout = () => { setUser(null); setView("store"); };
@@ -114,7 +118,8 @@ function App() {
       
       {/* === MODERN HEADER === */}
       <header className="main-header">
-        <div className="logo" onClick={() => setView("store")}>
+        {/* FIXED: Removed onClick. Logo is now static. */}
+        <div className="logo">
           Fabe's <span>Farm</span>
         </div>
 
@@ -132,8 +137,10 @@ function App() {
           <div className="user-menu">
              {user ? (
                <div style={{display:'flex', alignItems:'center'}}>
-                 {/* FIXED: Changed "Hi," to "User:" */}
-                 <span className="user-greeting">User: {user.name}</span>
+                 {/* FIXED: Smart Greeting (Admin vs User) */}
+                 <span className="user-greeting">
+                   {user.role === 'admin' ? 'Admin: ' : 'User: '} {user.name}
+                 </span>
                  <button onClick={handleLogout} style={{fontSize:'0.8rem', cursor:'pointer', border:'none', background:'none', textDecoration:'underline'}}>Sign Out</button>
                </div>
              ) : (
@@ -211,15 +218,13 @@ function App() {
           </div>
         )}
 
-        {/* 2. ABOUT VIEW (FIXED: Title and Long Description) */}
+        {/* 2. ABOUT VIEW */}
         {view === "about" && (
           <div className="page-container">
-            {/* Changed Title to "About Us" */}
             <h2 style={{color: '#2e7d32', textAlign: 'center'}}>About Us</h2>
             <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=2070" style={{width:'100%', borderRadius:'8px', marginBottom:'20px'}} alt="Farm" />
             
-            {/* Added Long Backstory */}
-            <p style={{lineHeight:'1.6', color:'#555', fontSize:'1.05rem'}}>
+            <p className="story-text" style={{lineHeight:'1.6', color:'#555', fontSize:'1.05rem'}}>
               Welcome to Fabe's Farm Store, a cornerstone of the agricultural community since 1985. What started as a humble roadside stand run by the Fabe family has grown into the region's premier destination for high-quality farming equipment, organic seeds, and fresh produce.
               <br /><br />
               For nearly four decades, we have been dedicated to sustainable farming practices and supporting local growers. We believe that the best harvest starts with the best tools and the deepest care for the land. Whether you are a commercial farmer or a backyard gardener, we are here to help you grow.
@@ -251,17 +256,28 @@ function App() {
           </div>
         )}
 
-        {/* 4. LOGIN VIEW (FIXED: Button Text) */}
+        {/* 4. LOGIN / REGISTER VIEW */}
         {view === "login" && (
           <div className="page-container" style={{maxWidth:'400px'}}>
-            <h2>Sign In</h2>
+            <h2 style={{textAlign:'center'}}>{isRegistering ? "Create Account" : "Sign In"}</h2>
             <form onSubmit={handleLogin} style={{display:'flex', flexDirection:'column', gap:'15px'}}>
               <input className="admin-input" placeholder="Username" value={loginData.username} onChange={e => setLoginData({...loginData, username: e.target.value})} />
               <input className="admin-input" type="password" placeholder="Password" value={loginData.password} onChange={e => setLoginData({...loginData, password: e.target.value})} />
               
-              {/* Changed text to "Sign In" only (Removed "Register") */}
-              <button type="submit" className="btn-save">Sign In</button>
+              <button type="submit" className="btn-save">
+                {isRegistering ? "Register Now" : "Sign In"}
+              </button>
             </form>
+
+            {/* REGISTER TOGGLE */}
+            <div style={{textAlign:'center', marginTop:'15px', fontSize:'0.9rem', color:'#666'}}>
+              {isRegistering ? "Already have an account? " : "Don't have an account? "}
+              <button 
+                onClick={() => setIsRegistering(!isRegistering)} 
+                style={{background:'none', border:'none', color:'#2e7d32', fontWeight:'bold', cursor:'pointer', textDecoration:'underline'}}>
+                {isRegistering ? "Sign In" : "Register"}
+              </button>
+            </div>
           </div>
         )}
 

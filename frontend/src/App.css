@@ -37,11 +37,12 @@ body {
 .logo {
   font-size: 1.8rem;
   font-weight: 800;
-  cursor: pointer;
-  color: #2e7d32; /* Farm Green */
+  color: #2e7d32; 
   letter-spacing: -0.5px;
   display: flex;
   align-items: center;
+  /* Removed cursor: pointer */
+  user-select: none; /* Prevents text highlighting */
 }
 .logo span { color: #ef6c00; } /* Orange Accent */
 
