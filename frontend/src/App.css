@@ -18,7 +18,7 @@ body {
 }
 
 /* =========================================
-   2. MODERN NAVBAR (Screenshot Style)
+   2. MODERN NAVBAR
    ========================================= */
 .main-header {
   display: flex;
@@ -45,10 +45,12 @@ body {
 }
 .logo span { color: #ef6c00; } /* Orange Accent */
 
-/* Middle Navigation */
+/* Middle Navigation - FIXED: Pushed to the right */
 .nav-center {
   display: flex;
   gap: 30px;
+  margin-left: auto;   /* Pushes nav away from logo */
+  margin-right: 40px;  /* Adds space before icons */
 }
 
 .nav-link {
@@ -79,7 +81,7 @@ body {
   border: none;
   cursor: pointer;
   position: relative;
-  font-size: 1.5rem; /* Size of the emoji/icon */
+  font-size: 1.5rem;
   color: #333;
   display: flex;
   align-items: center;
@@ -121,22 +123,34 @@ body {
   width: 100%;
 }
 
-/* Search & Filter Bar */
+/* Search & Filter Bar - FIXED: Rounded "Pill" Shape */
 .shop-controls {
   display: flex;
   gap: 15px;
   margin-bottom: 30px;
-  justify-content: center;
+  justify-content: space-between; /* Spreads search and Add button apart */
+  align-items: center;
+}
+
+.search-wrapper {
+  display: flex;
+  gap: 10px;
 }
 
 .search-input, .category-select {
-  padding: 12px;
+  padding: 12px 20px;
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: 50px; /* Fully Rounded */
   font-size: 1rem;
   outline: none;
+  transition: all 0.3s ease;
 }
 .search-input { width: 300px; }
+
+.search-input:focus, .category-select:focus {
+  border-color: #2e7d32;
+  box-shadow: 0 0 8px rgba(46, 125, 50, 0.2);
+}
 
 .product-grid {
   display: grid;
@@ -172,21 +186,73 @@ body {
 .card-price { font-size: 1.2rem; font-weight: 800; color: #2e7d32; margin-bottom: 10px; }
 
 /* =========================================
-   4. ADMIN TOOLS (INTEGRATED)
+   4. ADMIN MODAL (NEW PROFESSIONAL POPUP)
    ========================================= */
-.admin-panel {
-  background-color: #fff8e1; /* Light orange tint */
-  border: 2px dashed #ffb74d;
-  padding: 25px;
-  border-radius: 12px;
-  margin-bottom: 40px;
+/* The Modal Background */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Dimmed background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
 }
 
-.admin-panel h3 { margin-top: 0; color: #ef6c00; }
+/* The Modal Box */
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  width: 500px;
+  max-width: 90%;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  animation: popIn 0.3s ease;
+}
 
-.admin-form { display: flex; flex-direction: column; gap: 10px; }
+@keyframes popIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.btn-close-modal {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #888;
+}
+
+/* The "+ Add Product" Button */
+.btn-add-new {
+  background-color: #2e7d32;
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3);
+  transition: transform 0.2s;
+}
+.btn-add-new:hover { transform: scale(1.05); }
+
+/* Form Styles inside Modal */
+.admin-form { display: flex; flex-direction: column; gap: 15px; }
 .form-row { display: flex; gap: 10px; }
-.admin-input { padding: 10px; border: 1px solid #ccc; border-radius: 5px; flex: 1; }
+.admin-input { padding: 12px; border: 1px solid #ccc; border-radius: 8px; flex: 1; }
 
 .btn-save { background: #2e7d32; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
 .btn-cancel { background: #757575; color: white; padding: 12px; border: none; border-radius: 6px; cursor: pointer; }

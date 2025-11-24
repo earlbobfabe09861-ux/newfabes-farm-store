@@ -7,7 +7,6 @@ const API_URL = "https://newfabes-farm-store.onrender.com";
 
 function App() {
   // === APP STATE ===
-  // We start at "store" now, because Home IS Shop.
   const [view, setView] = useState("store"); 
   const [products, setProducts] = useState([]);
   
@@ -19,13 +18,15 @@ function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
+  // MODAL STATE (For Admin Popup)
+  const [showModal, setShowModal] = useState(false);
+
   // Temporary States
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [newProduct, setNewProduct] = useState({ name: "", price: "", category: "", description: "", image: "" });
   const [editingId, setEditingId] = useState(null);
-  const [checkoutData, setCheckoutData] = useState({ fullName: "", address: "" });
-
+  
   // === EFFECTS ===
   useEffect(() => { refreshProducts(); }, []);
   useEffect(() => { localStorage.setItem("cart", JSON.stringify(cart)); }, [cart]);
@@ -48,7 +49,7 @@ function App() {
     } else {
       setUser({ name: loginData.username, role: "user" });
     }
-    setView("store"); // Go to shop after login
+    setView("store"); 
   };
 
   const handleLogout = () => { setUser(null); setView("store"); };
@@ -61,15 +62,26 @@ function App() {
     setView("checkout");
   };
 
-  // === ADMIN CRUD ===
+  // === ADMIN CRUD (MODAL UPDATED) ===
   const handleSubmitProduct = (e) => {
     e.preventDefault();
     if (editingId) {
       axios.put(`${API_URL}/api/products/${editingId}`, newProduct)
-        .then(() => { alert("Updated!"); setEditingId(null); setNewProduct({}); refreshProducts(); });
+        .then(() => { 
+          alert("Updated!"); 
+          setEditingId(null); 
+          setNewProduct({}); 
+          setShowModal(false); // Close popup
+          refreshProducts(); 
+        });
     } else {
       axios.post(`${API_URL}/api/products`, newProduct)
-        .then(() => { alert("Added!"); setNewProduct({}); refreshProducts(); });
+        .then(() => { 
+          alert("Added!"); 
+          setNewProduct({}); 
+          setShowModal(false); // Close popup
+          refreshProducts(); 
+        });
     }
   };
 
@@ -77,7 +89,7 @@ function App() {
     e.stopPropagation();
     setNewProduct(p);
     setEditingId(p._id);
-    window.scrollTo(0,0);
+    setShowModal(true); // Open popup
   };
 
   const handleDelete = (e, id) => {
@@ -100,29 +112,23 @@ function App() {
   return (
     <div className="app-container">
       
-      {/* === MODERN HEADER (Screenshot Style) === */}
+      {/* === MODERN HEADER === */}
       <header className="main-header">
-        {/* 1. Logo Left */}
         <div className="logo" onClick={() => setView("store")}>
           Fabe's <span>Farm</span>
         </div>
 
-        {/* 2. Nav Center */}
         <nav className="nav-center">
-          {/* Home and Shop are now the same thing */}
           <button className={`nav-link ${view === "store" ? "active" : ""}`} onClick={() => setView("store")}>Shop</button>
           <button className={`nav-link ${view === "about" ? "active" : ""}`} onClick={() => setView("about")}>About</button>
           <button className={`nav-link ${view === "contact" ? "active" : ""}`} onClick={() => setView("contact")}>Contact</button>
         </nav>
 
-        {/* 3. Icons Right */}
         <div className="nav-right">
-          {/* Cart Icon */}
           <button className="icon-btn" onClick={() => setView("cart")}>
             🛒 <span className="cart-badge">{cart.length}</span>
           </button>
 
-          {/* User Icon / Login Logic */}
           <div className="user-menu">
              {user ? (
                <div style={{display:'flex', alignItems:'center'}}>
@@ -139,39 +145,25 @@ function App() {
       {/* === MAIN CONTENT === */}
       <main className="main-content">
         
-        {/* 1. SHOP VIEW (This is now Home) */}
+        {/* 1. SHOP VIEW (Updated with Modal) */}
         {view === "store" && (
           <div>
-            {/* ADMIN PANEL (Only visible if Admin) */}
-            {user && user.role === "admin" && (
-              <div className="admin-panel">
-                <h3>🛠️ Inventory Manager</h3>
-                <form onSubmit={handleSubmitProduct} className="admin-form">
-                  <div className="form-row">
-                    <input className="admin-input" placeholder="Product Name" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} required />
-                    <input className="admin-input" type="number" placeholder="Price" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} required />
-                    <input className="admin-input" placeholder="Category" value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} />
-                  </div>
-                  <input className="admin-input" placeholder="Description" value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} />
-                  <input className="admin-input" placeholder="Image URL" value={newProduct.image} onChange={e => setNewProduct({...newProduct, image: e.target.value})} required />
-                  
-                  <div className="form-row">
-                    <button type="submit" className="btn-save">{editingId ? "Update Item" : "Add to Inventory"}</button>
-                    {editingId && <button type="button" className="btn-cancel" onClick={() => {setEditingId(null); setNewProduct({});}}>Cancel Edit</button>}
-                  </div>
-                </form>
-              </div>
-            )}
-
-            {/* FILTERS */}
             <div className="shop-controls">
-               <select className="category-select" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
-                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
-               </select>
-               <input className="search-input" placeholder="Search products..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+               <div className="search-wrapper">
+                 <select className="category-select" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
+                   {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                 </select>
+                 <input className="search-input" placeholder="Search products..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+               </div>
+
+               {/* ADD BUTTON (Only for Admin) */}
+               {user && user.role === "admin" && (
+                 <button className="btn-add-new" onClick={() => { setNewProduct({}); setEditingId(null); setShowModal(true); }}>
+                   + Add Product
+                 </button>
+               )}
             </div>
 
-            {/* PRODUCT GRID */}
             <div className="product-grid">
               {filteredProducts.map(p => (
                 <div key={p._id} className="product-card" onClick={() => {setSelectedProduct(p); setView("details");}}>
@@ -181,7 +173,6 @@ function App() {
                      <div className="card-price">${p.price}</div>
                    </div>
                    
-                   {/* ADMIN BUTTONS ON CARD */}
                    {user && user.role === "admin" && (
                      <div className="admin-actions">
                        <button className="btn-edit" onClick={(e) => prepareEdit(e, p)}>Edit</button>
@@ -191,6 +182,32 @@ function App() {
                 </div>
               ))}
             </div>
+
+            {/* ADMIN MODAL POPUP */}
+            {showModal && (
+              <div className="modal-overlay" onClick={() => setShowModal(false)}>
+                <div className="modal-content" onClick={e => e.stopPropagation()}>
+                  <div className="modal-header">
+                    <h3>{editingId ? "Edit Product" : "Add New Product"}</h3>
+                    <button className="btn-close-modal" onClick={() => setShowModal(false)}>×</button>
+                  </div>
+                  
+                  <form onSubmit={handleSubmitProduct} className="admin-form">
+                    <input className="admin-input" placeholder="Product Name" value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} required />
+                    <div className="form-row">
+                      <input className="admin-input" type="number" placeholder="Price" value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} required />
+                      <input className="admin-input" placeholder="Category" value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} />
+                    </div>
+                    <textarea className="admin-input" placeholder="Description" value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} rows="3" />
+                    <input className="admin-input" placeholder="Image URL" value={newProduct.image} onChange={e => setNewProduct({...newProduct, image: e.target.value})} required />
+                    
+                    <button type="submit" className="btn-save" style={{marginTop:'10px'}}>
+                      {editingId ? "Save Changes" : "Create Product"}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -204,20 +221,27 @@ function App() {
           </div>
         )}
 
-        {/* 3. CONTACT VIEW */}
+        {/* 3. CONTACT VIEW - FIXED: Added Google Map Iframe */}
         {view === "contact" && (
           <div className="page-container">
             <h2 style={{color: '#2e7d32'}}>Contact Us</h2>
             <p><b>Address:</b> The Barn, Springfield, IL 62704</p>
             <p><b>Phone:</b> (555) 123-4567</p>
             <p><b>Email:</b> support@fabesfarm.com</p>
-            <div style={{marginTop:'20px', height:'300px', background:'#eee', display:'flex', alignItems:'center', justifyContent:'center', borderRadius:'8px'}}>
-               (Map Placeholder)
+            <div style={{marginTop:'20px', height:'300px', width:'100%', borderRadius:'8px', overflow:'hidden'}}>
+               <iframe 
+                 width="100%" 
+                 height="100%" 
+                 frameBorder="0" 
+                 style={{border:0}} 
+                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1422937950147!2d-89.65014892400567!3d39.78172130312721!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x880b0a0c9195984b%3A0xde58a8aa0737e23f!2sSpringfield%2C%20IL!5e0!3m2!1sen!2sus!4v1710000000000!5m2!1sen!2sus" 
+                 allowFullScreen>
+               </iframe>
             </div>
           </div>
         )}
 
-        {/* 4. LOGIN VIEW */}
+        {/* 4. LOGIN VIEW - FIXED: Removed Password Hint */}
         {view === "login" && (
           <div className="page-container" style={{maxWidth:'400px'}}>
             <h2>Sign In</h2>
@@ -226,7 +250,6 @@ function App() {
               <input className="admin-input" type="password" placeholder="Password" value={loginData.password} onChange={e => setLoginData({...loginData, password: e.target.value})} />
               <button type="submit" className="btn-save">Sign In / Register</button>
             </form>
-            <p style={{fontSize:'0.9rem', color:'#777', marginTop:'20px'}}>Try <b>admin</b> / <b>123</b> for Admin Tools.</p>
           </div>
         )}
 
