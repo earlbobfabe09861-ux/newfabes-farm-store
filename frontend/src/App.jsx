@@ -34,7 +34,7 @@ function App() {
     name: "", price: "", category: "", description: "", image: ""
   });
   
-  // EDITING STATE (Tracks if we are editing a product ID)
+  // EDITING STATE
   const [editingId, setEditingId] = useState(null);
 
   // Checkout Form State
@@ -152,14 +152,13 @@ function App() {
 
   const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
 
-  // === NEW FILTER LOGIC (SEARCH + CATEGORY) ===
+  // === FILTER LOGIC ===
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "All Categories" || (product.category && product.category === selectedCategory);
     return matchesSearch && matchesCategory;
   });
 
-  // EXTRACT UNIQUE CATEGORIES FOR DROPDOWN
   const categories = ["All Categories", ...new Set(products.map(p => p.category).filter(Boolean))];
 
   const getDeliveryDate = (days) => {
@@ -184,26 +183,18 @@ function App() {
 
       {/* === MAIN HEADER === */}
       <header className="main-header">
+        {/* CLEANED UP LOGO */}
         <div className="logo" onClick={() => setView("home")}>
-          <span style={{color: '#e53238'}}>F</span><span style={{color: '#0064d2'}}>a</span><span style={{color: '#f5af02'}}>b</span><span style={{color: '#86b817'}}>e</span><span style={{color: '#e53238'}}>'</span><span style={{color: '#0064d2'}}>s</span>
-          <span style={{color: '#333'}}> </span>
-          <span style={{color: '#f5af02'}}>F</span><span style={{color: '#86b817'}}>a</span><span style={{color: '#e53238'}}>r</span><span style={{color: '#0064d2'}}>m</span>
+          <span className="logo-main">Fabe's</span>
+          <span className="logo-accent"> Farm</span>
         </div>
         
-        {/* === NEW: CATEGORY DROPDOWN + SEARCH === */}
-        <div className="search-bar-container" style={{display:'flex', alignItems:'center', border:'2px solid #333', borderRadius:'4px', overflow:'hidden'}}>
+        {/* SEARCH & CATEGORY */}
+        <div className="search-bar-container">
             <select 
+              className="category-dropdown"
               value={selectedCategory} 
               onChange={(e) => { setSelectedCategory(e.target.value); setView("store"); }}
-              style={{
-                padding: '10px', 
-                backgroundColor: '#f8f8f8', 
-                border: 'none', 
-                borderRight: '1px solid #ccc',
-                cursor: 'pointer',
-                outline: 'none',
-                maxWidth: '150px'
-              }}
             >
               {categories.map(cat => (
                 <option key={cat} value={cat}>{cat}</option>
@@ -213,19 +204,19 @@ function App() {
             <input 
               type="text" 
               className="search-input"
-              style={{border: 'none', outline: 'none', flex: 1}}
               placeholder="Search for items..." 
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); if(view !== "store") setView("store"); }} 
             />
             
-            <div style={{padding: '0 15px', color: '#333', cursor: 'pointer'}} onClick={() => setView("store")}>
+            <div className="search-icon-btn" onClick={() => setView("store")}>
               🔍
             </div>
         </div>
 
         <nav className="nav-links">
-          <button onClick={() => setView("home")} className="nav-btn">Home</button>
+          {/* UPDATED: Changed "Home" to "About" */}
+          <button onClick={() => setView("home")} className="nav-btn">About</button>
           <button onClick={() => setView("store")} className="nav-btn">Shop</button>
           <button onClick={() => setView("cart")} className="nav-btn">Cart ({cart.length})</button>
           {user && user.role === 'admin' && ( 
@@ -243,17 +234,20 @@ function App() {
             <form onSubmit={handleLogin} className="login-form">
               <input type="text" placeholder="Username" value={loginData.username} onChange={(e) => setLoginData({...loginData, username: e.target.value})} required />
               <input type="password" placeholder="Password" value={loginData.password} onChange={(e) => setLoginData({...loginData, password: e.target.value})} required />
-              <button type="submit" className="search-btn" style={{width: '100%'}}>Sign In</button>
+              <button type="submit" className="cta-btn" style={{width: '100%', borderRadius: '4px'}}>Sign In</button>
             </form>
           </div>
         )}
 
-        {/* Home View */}
+        {/* === UPDATED: HOME / ABOUT VIEW === */}
         {view === "home" && (
           <div className="home-container">
-            <h1 style={{fontSize: '2.5rem', marginBottom: '20px'}}>Welcome to Fabe's Farm Store</h1>
+            {/* UPDATED TITLE */}
+            <h1 style={{fontSize: '2.5rem', marginBottom: '20px'}}>About Fabe's Farm Store</h1>
+            
             <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=2070&auto=format&fit=crop" alt="Farm Banner" className="banner-img" />
             
+            {/* UPDATED: MERGED FOOTER CONTENT INTO OUR STORY */}
             <div className="about-section">
               <h2>Our Story</h2>
               <p>
@@ -261,8 +255,11 @@ function App() {
                 Founded by "Farmer Fabe," our mission has always been simple: <strong>connect the community with the land.</strong>
               </p>
               <p>
-                Today, we are the region's trusted source for high-quality seeds, reliable tractor parts, and fresh organic produce. 
+                Today, Fabe's Farm Store is dedicated to providing the highest quality farming equipment, seeds, and fresh produce to our local community. 
                 Whether you are running a 500-acre operation or just planting your first backyard garden, we have the tools and expertise you need.
+              </p>
+              <p>
+                We are the region's trusted source for all things agriculture. Connecting you to the land is not just our motto, it's our promise.
               </p>
             </div>
 
@@ -276,14 +273,14 @@ function App() {
             <button onClick={() => setView("store")} className="back-link">&lt; Back to search results</button>
             <div className="details-container">
               <div className="image-section">
-                 <img src={selectedProduct.image} alt={selectedProduct.name} style={{width: '100%', maxHeight: '500px', objectFit: 'contain'}} onError={(e) => {e.target.src = "https://placehold.co/400?text=No+Image"}} />
+                 <img src={selectedProduct.image} alt={selectedProduct.name} className="detail-img" onError={(e) => {e.target.src = "https://placehold.co/400?text=No+Image"}} />
               </div>
               <div className="info-section">
-                  <h1 style={{fontSize: '1.4rem', borderBottom: '1px solid #eee', paddingBottom: '15px'}}>{selectedProduct.name}</h1>
-                  <div style={{marginBottom: '20px', fontSize: '0.9rem'}}><span style={{fontWeight: 'bold'}}>Seller:</span> FarmDirect <span style={{color: '#0654ba'}}>(98.8% positive)</span></div>
+                  <h1 className="detail-title">{selectedProduct.name}</h1>
+                  <div className="seller-info"><span style={{fontWeight: 'bold'}}>Seller:</span> FarmDirect <span style={{color: '#0654ba'}}>(98.8% positive)</span></div>
                   
                   <div className="price-box">
-                      <div style={{marginBottom: '10px', fontSize: '1.5rem', fontWeight: 'bold'}}>US ${selectedProduct.price}</div>
+                      <div className="detail-price">US ${selectedProduct.price}</div>
                       <div style={{marginBottom: '20px', color: '#555', fontSize: '0.9rem'}}>Condition: <span style={{fontWeight: 'bold', color: '#333'}}>Brand New</span></div>
                       <div className="action-buttons">
                           <button onClick={() => handleBuyNow(selectedProduct)} className="btn-buy">Buy It Now</button>
@@ -291,56 +288,36 @@ function App() {
                       </div>
                   </div>
                   
-                  <div style={{marginTop: '30px', fontSize: '0.9rem', color: '#333'}}>
-                    <div style={{display: 'flex', marginBottom: '12px'}}>
-                      <span style={{width: '100px', color: '#777'}}>Shipping:</span>
+                  <div className="shipping-info">
+                    <div className="ship-row">
+                      <span className="ship-label">Shipping:</span>
                       <div style={{flex: 1}}><span style={{fontWeight: 'bold'}}>US $12.50</span> Fabe's Express Rural Delivery.</div>
                     </div>
-                    <div style={{display: 'flex', marginBottom: '12px'}}>
-                      <span style={{width: '100px', color: '#777'}}>Located in:</span>
+                    <div className="ship-row">
+                      <span className="ship-label">Located in:</span>
                       <div>The Barn, Springfield, IL, United States</div>
                     </div>
-                    <div style={{display: 'flex', marginBottom: '12px'}}>
-                      <span style={{width: '100px', color: '#777'}}>Delivery:</span>
+                    <div className="ship-row">
+                      <span className="ship-label">Delivery:</span>
                       <div>Estimated between <span style={{fontWeight: 'bold'}}>{getDeliveryDate(3)}</span> and <span style={{fontWeight: 'bold'}}>{getDeliveryDate(6)}</span>.</div>
                     </div>
                   </div>
 
-                  {/* === NEW: DESCRIPTION, SELLER & FEEDBACK SECTIONS === */}
-                  
-                  <hr style={{ margin: "30px 0", border: "0", borderTop: "1px solid #e1e1e1" }} />
+                  <hr className="divider" />
 
-                  {/* 1. ITEM DESCRIPTION SECTION */}
+                  {/* 1. ITEM DESCRIPTION */}
                   <div className="product-description-section">
-                    <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "10px" }}>
-                      Item Description
-                    </h3>
-                    <p style={{ fontSize: "16px", lineHeight: "1.6", color: "#333" }}>
-                      {selectedProduct.description ? selectedProduct.description : "No description available for this product."}
-                    </p>
+                    <h3>Item Description</h3>
+                    <p>{selectedProduct.description ? selectedProduct.description : "No description available for this product."}</p>
                   </div>
 
-                  <hr style={{ margin: "30px 0", border: "0", borderTop: "1px solid #e1e1e1" }} />
+                  <hr className="divider" />
 
-                  {/* 2. ABOUT THE SELLER SECTION */}
+                  {/* 2. ABOUT THE SELLER */}
                   <div className="about-seller-section">
-                    <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "15px" }}>
-                      About the Seller
-                    </h3>
+                    <h3>About the Seller</h3>
                     <div style={{ display: "flex", alignItems: "center", gap: "15px", marginBottom: "10px" }}>
-                      <div style={{ 
-                        width: "50px", 
-                        height: "50px", 
-                        backgroundColor: "#2c3e50", 
-                        color: "white",
-                        borderRadius: "50%", 
-                        display: "flex", 
-                        alignItems: "center", 
-                        justifyContent: "center",
-                        fontWeight: "bold"
-                      }}>
-                        FD
-                      </div>
+                      <div className="seller-avatar">FD</div>
                       <div>
                         <p style={{ fontWeight: "bold", margin: "0" }}>FarmDirect</p>
                         <p style={{ fontSize: "14px", color: "#666", margin: "0" }}>98.8% Positive Feedback</p>
@@ -351,33 +328,24 @@ function App() {
                     </p>
                   </div>
 
-                  <hr style={{ margin: "30px 0", border: "0", borderTop: "1px solid #e1e1e1" }} />
+                  <hr className="divider" />
 
-                  {/* 3. SELLER FEEDBACK SECTION */}
+                  {/* 3. FEEDBACK */}
                   <div className="seller-feedback-section">
-                    <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "15px" }}>
-                      Seller Feedback
-                    </h3>
-                    
+                    <h3>Seller Feedback</h3>
                     <div style={{ marginBottom: "15px", paddingBottom: "10px", borderBottom: "1px solid #eee" }}>
                       <div style={{ color: "#f39c12", marginBottom: "5px" }}>★★★★★</div>
                       <p style={{ fontWeight: "bold", margin: "0 0 5px 0" }}>Exactly what I needed!</p>
-                      <p style={{ fontSize: "14px", color: "#555", margin: "0" }}>
-                        "Very sturdy and arrived 2 days early. Highly recommend this seller."
-                      </p>
+                      <p style={{ fontSize: "14px", color: "#555", margin: "0" }}>"Very sturdy and arrived 2 days early. Highly recommend this seller."</p>
                       <p style={{ fontSize: "12px", color: "#999", marginTop: "5px" }}>- John D.</p>
                     </div>
-
-                    <div style={{ marginBottom: "15px" }}>
+                    <div>
                       <div style={{ color: "#f39c12", marginBottom: "5px" }}>★★★★☆</div>
                       <p style={{ fontWeight: "bold", margin: "0 0 5px 0" }}>Good value</p>
-                      <p style={{ fontSize: "14px", color: "#555", margin: "0" }}>
-                        "Good product for the price. Packaging was a bit damaged but item was fine."
-                      </p>
+                      <p style={{ fontSize: "14px", color: "#555", margin: "0" }}>"Good product for the price. Packaging was a bit damaged but item was fine."</p>
                       <p style={{ fontSize: "12px", color: "#999", marginTop: "5px" }}>- Sarah M.</p>
                     </div>
                   </div>
-                  {/* === END NEW SECTIONS === */}
 
               </div>
             </div>
@@ -387,7 +355,6 @@ function App() {
         {/* Shop Store View */}
         {view === "store" && (
           <div className="store-wrapper">
-             {/* Show what is being searched/filtered */}
              {(searchTerm || selectedCategory !== "All Categories") && (
                <div style={{marginBottom: '15px', fontSize: '1.1rem'}}>
                   Showing results for: <b>{selectedCategory}</b> {searchTerm && <span> matching "<b>{searchTerm}</b>"</span>}
@@ -399,8 +366,8 @@ function App() {
                 filteredProducts.map(product => (
                   <div key={product._id} className="product-card" onClick={() => openProductDetails(product)}>
                     <img src={product.image} alt={product.name} onError={(e) => {e.target.src = "https://placehold.co/200?text=No+Image"}} />
-                    <h3 style={{fontSize: '1rem', color: '#333', marginBottom: '5px', textDecoration: 'underline'}}>{product.name}</h3>
-                    <div style={{fontWeight: 'bold', fontSize: '1.2rem'}}>${product.price}</div>
+                    <h3 className="card-title">{product.name}</h3>
+                    <div className="card-price">${product.price}</div>
                   </div>
                 ))
               ) : (
@@ -473,7 +440,7 @@ function App() {
           <div className="admin-container">
              <h2>Admin Dashboard</h2>
              
-             <div className="admin-form-wrapper" style={{marginBottom: '30px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px'}}>
+             <div className="admin-form-wrapper">
                <h3>{editingId ? `Editing: ${newProduct.name}` : "Add New Product"}</h3>
                <form onSubmit={handleSubmitProduct}>
                 <div style={{display:'flex', gap:'10px', marginBottom:'10px'}}>
@@ -485,12 +452,12 @@ function App() {
                 <input placeholder="Image URL" value={newProduct.image} onChange={e => setNewProduct({...newProduct, image: e.target.value})} required style={{marginBottom: '10px', width:'100%'}} />
                 
                 <div style={{display:'flex', gap:'10px'}}>
-                  <button type="submit" style={{backgroundColor: editingId ? '#f5af02' : 'green', color: 'white', padding: '10px 20px', border: 'none', cursor: 'pointer', fontWeight:'bold'}}>
+                  <button type="submit" className="btn-save">
                     {editingId ? "Update Product" : "Add Product"}
                   </button>
                   
                   {editingId && (
-                    <button type="button" onClick={handleCancelEdit} style={{backgroundColor: '#999', color: 'white', padding: '10px 20px', border: 'none', cursor: 'pointer'}}>
+                    <button type="button" onClick={handleCancelEdit} className="btn-cancel">
                       Cancel
                     </button>
                   )}
@@ -500,18 +467,18 @@ function App() {
 
              <h3>Current Inventory</h3>
              <div className="inventory-list">
-               <div className="inventory-header" style={{display:'flex', fontWeight:'bold', padding:'10px', borderBottom:'2px solid #333'}}>
+               <div className="inventory-header">
                  <div style={{flex:2}}>Name</div>
                  <div style={{flex:1}}>Price</div>
                  <div style={{flex:1, textAlign:'right'}}>Actions</div>
                </div>
                {products.map(p => ( 
-                 <div key={p._id} className="inventory-item" style={{display:'flex', padding:'10px', borderBottom:'1px solid #eee', alignItems:'center'}}>
+                 <div key={p._id} className="inventory-item">
                    <div style={{flex:2}}>{p.name}</div>
                    <div style={{flex:1}}>${p.price}</div>
                    <div style={{flex:1, textAlign:'right'}}>
-                     <button onClick={() => handleEditProduct(p)} style={{color: '#0053a0', cursor: 'pointer', border: 'none', background: 'none', marginRight:'15px', textDecoration:'underline'}}>Edit</button>
-                     <button onClick={() => handleDeleteProduct(p._id)} style={{color: 'red', cursor: 'pointer', border: 'none', background: 'none', textDecoration:'underline'}}>Delete</button>
+                     <button onClick={() => handleEditProduct(p)} className="btn-link">Edit</button>
+                     <button onClick={() => handleDeleteProduct(p._id)} className="btn-link-danger">Delete</button>
                    </div>
                  </div> 
                ))}
@@ -520,13 +487,11 @@ function App() {
         )}
       </main>
 
-      {/* === MAIN FOOTER === */}
+      {/* === MAIN FOOTER (Updated: Removed About Column) === */}
       <footer className="main-footer">
         <div className="footer-content">
-          <div className="footer-column">
-            <h3>About Fabe's Farm Store</h3>
-            <p>Founded in 2024, Fabe's Farm Store is dedicated to providing the highest quality farming equipment, seeds, and fresh produce to our local community. Connecting you to the land.</p>
-          </div>
+          {/* REMOVED THE ABOUT COLUMN FROM HERE */}
+          
           <div className="footer-column">
             <h3>Contact Us</h3>
             <ul>
