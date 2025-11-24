@@ -10,7 +10,7 @@ function App() {
   const [view, setView] = useState("store"); 
   const [products, setProducts] = useState([]);
   
-  // Cart & User (Persisted in LocalStorage)
+  // Cart & User
   const [cart, setCart] = useState(() => JSON.parse(localStorage.getItem("cart")) || []);
   const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("user")) || null);
 
@@ -18,7 +18,7 @@ function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  // MODAL STATE (For Admin Popup)
+  // MODAL STATE
   const [showModal, setShowModal] = useState(false);
 
   // Temporary States
@@ -62,7 +62,7 @@ function App() {
     setView("checkout");
   };
 
-  // === ADMIN CRUD (MODAL UPDATED) ===
+  // === ADMIN CRUD ===
   const handleSubmitProduct = (e) => {
     e.preventDefault();
     if (editingId) {
@@ -71,7 +71,7 @@ function App() {
           alert("Updated!"); 
           setEditingId(null); 
           setNewProduct({}); 
-          setShowModal(false); // Close popup
+          setShowModal(false);
           refreshProducts(); 
         });
     } else {
@@ -79,7 +79,7 @@ function App() {
         .then(() => { 
           alert("Added!"); 
           setNewProduct({}); 
-          setShowModal(false); // Close popup
+          setShowModal(false);
           refreshProducts(); 
         });
     }
@@ -89,7 +89,7 @@ function App() {
     e.stopPropagation();
     setNewProduct(p);
     setEditingId(p._id);
-    setShowModal(true); // Open popup
+    setShowModal(true);
   };
 
   const handleDelete = (e, id) => {
@@ -132,7 +132,8 @@ function App() {
           <div className="user-menu">
              {user ? (
                <div style={{display:'flex', alignItems:'center'}}>
-                 <span className="user-greeting">Hi, {user.name}</span>
+                 {/* FIXED: Changed "Hi," to "User:" */}
+                 <span className="user-greeting">User: {user.name}</span>
                  <button onClick={handleLogout} style={{fontSize:'0.8rem', cursor:'pointer', border:'none', background:'none', textDecoration:'underline'}}>Sign Out</button>
                </div>
              ) : (
@@ -145,7 +146,7 @@ function App() {
       {/* === MAIN CONTENT === */}
       <main className="main-content">
         
-        {/* 1. SHOP VIEW (Updated with Modal) */}
+        {/* 1. SHOP VIEW */}
         {view === "store" && (
           <div>
             <div className="shop-controls">
@@ -156,7 +157,6 @@ function App() {
                  <input className="search-input" placeholder="Search products..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                </div>
 
-               {/* ADD BUTTON (Only for Admin) */}
                {user && user.role === "admin" && (
                  <button className="btn-add-new" onClick={() => { setNewProduct({}); setEditingId(null); setShowModal(true); }}>
                    + Add Product
@@ -183,7 +183,7 @@ function App() {
               ))}
             </div>
 
-            {/* ADMIN MODAL POPUP */}
+            {/* ADMIN MODAL */}
             {showModal && (
               <div className="modal-overlay" onClick={() => setShowModal(false)}>
                 <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -211,17 +211,27 @@ function App() {
           </div>
         )}
 
-        {/* 2. ABOUT VIEW */}
+        {/* 2. ABOUT VIEW (FIXED: Title and Long Description) */}
         {view === "about" && (
           <div className="page-container">
-            <h2 style={{color: '#2e7d32'}}>Our Story</h2>
+            {/* Changed Title to "About Us" */}
+            <h2 style={{color: '#2e7d32', textAlign: 'center'}}>About Us</h2>
             <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=2070" style={{width:'100%', borderRadius:'8px', marginBottom:'20px'}} alt="Farm" />
-            <p>Established in 1985, Fabe's Farm Store began as a small roadside stand. Today, we are the trusted source for quality farming equipment and seeds.</p>
-            <button onClick={() => setView("store")} className="btn-add-cart" style={{width:'auto', padding:'10px 30px'}}>Back to Shop</button>
+            
+            {/* Added Long Backstory */}
+            <p style={{lineHeight:'1.6', color:'#555', fontSize:'1.05rem'}}>
+              Welcome to Fabe's Farm Store, a cornerstone of the agricultural community since 1985. What started as a humble roadside stand run by the Fabe family has grown into the region's premier destination for high-quality farming equipment, organic seeds, and fresh produce.
+              <br /><br />
+              For nearly four decades, we have been dedicated to sustainable farming practices and supporting local growers. We believe that the best harvest starts with the best tools and the deepest care for the land. Whether you are a commercial farmer or a backyard gardener, we are here to help you grow.
+            </p>
+            
+            <div style={{textAlign:'center', marginTop:'30px'}}>
+              <button onClick={() => setView("store")} className="btn-add-cart" style={{width:'auto', padding:'10px 30px'}}>Back to Shop</button>
+            </div>
           </div>
         )}
 
-        {/* 3. CONTACT VIEW - FIXED: Added Google Map Iframe */}
+        {/* 3. CONTACT VIEW */}
         {view === "contact" && (
           <div className="page-container">
             <h2 style={{color: '#2e7d32'}}>Contact Us</h2>
@@ -241,14 +251,16 @@ function App() {
           </div>
         )}
 
-        {/* 4. LOGIN VIEW - FIXED: Removed Password Hint */}
+        {/* 4. LOGIN VIEW (FIXED: Button Text) */}
         {view === "login" && (
           <div className="page-container" style={{maxWidth:'400px'}}>
             <h2>Sign In</h2>
             <form onSubmit={handleLogin} style={{display:'flex', flexDirection:'column', gap:'15px'}}>
               <input className="admin-input" placeholder="Username" value={loginData.username} onChange={e => setLoginData({...loginData, username: e.target.value})} />
               <input className="admin-input" type="password" placeholder="Password" value={loginData.password} onChange={e => setLoginData({...loginData, password: e.target.value})} />
-              <button type="submit" className="btn-save">Sign In / Register</button>
+              
+              {/* Changed text to "Sign In" only (Removed "Register") */}
+              <button type="submit" className="btn-save">Sign In</button>
             </form>
           </div>
         )}
